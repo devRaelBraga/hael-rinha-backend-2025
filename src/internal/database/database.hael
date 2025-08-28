@@ -1,0 +1,22 @@
+pg_connect("postgres://rinha:rinha@/rinha?host=/var/run/postgresql", "db")
+
+$insertPayment ==> (amount, correlation_id, processor, requested_at) {
+    pg_exec("db",
+        "INSERT INTO payments (correlation_id, amount, processor, requested_at)
+        VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
+        [correlation_id, amount, processor, requested_at]
+    )
+}
+
+$getPayments ==> (from, to) {
+    if(!from) {
+        $rows = pg_query("db", "SELECT processor, COUNT(*) AS total, SUM(amount) FROM payments GROUP BY processor;")
+    } else {
+        $rows = pg_query("db", "SELECT processor, COUNT(*) AS total, SUM(amount) FROM payments WHERE requested_at BETWEEN $1 AND $2 GROUP BY processor;", [from, to])
+    }
+
+    if(!rows[0]) {
+        return bad
+    }
+    return rows
+}

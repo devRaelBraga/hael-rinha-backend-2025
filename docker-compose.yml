@@ -1,0 +1,130 @@
+# credits for https://github.com/laurentino14 for this docker-compose.yml
+
+x-service-templates:
+  api: &api
+    image: hisraelbraga/rinha-2025-hael:latest
+    restart: on-failure
+    networks:
+      - rinha
+      - payment-processor
+    ulimits:
+      nproc: 1000000
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    volumes:
+        - pg_socket:/var/run/postgresql
+        - mq_socket:/var/run/mq
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    networks:
+      - rinha
+    environment:
+      POSTGRES_USER: rinha
+      POSTGRES_PASSWORD: rinha
+      POSTGRES_DB: rinha
+    volumes:
+      - ./src/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./src/config/postgresql.conf:/etc/postgresql.conf:ro
+      - pg_socket:/var/run/postgresql
+    ports:
+      - "1010:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "190MB"
+    healthcheck: 
+      test: ["CMD-SHELL", "pg_isready -U rinha -d rinha"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s 
+
+  api1:
+    <<: *api
+    container_name: api1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER: "main"
+      WORKERS_POOL_SIZE: "5"
+      PG_MAX_CONNS: "25"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.4"
+          memory: "50MB"
+
+  api2:
+    <<: *api
+    container_name: api2
+    depends_on:
+      - api1
+    environment:
+      WORKERS_POOL_SIZE: "5"
+      PG_MAX_CONNS: "25"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.4"
+          memory: "50MB"
+  # api3:
+  #   <<: *api
+  #   container_name: api3
+  #   depends_on:
+  #     - api1
+  #   environment:
+  #     WORKERS_POOL_SIZE: "5"
+  #     PG_MAX_CONNS: "25"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.2"
+  #         memory: "25MB"
+  # api4:
+  #   <<: *api
+  #   container_name: api4
+  #   depends_on:
+  #     - api1
+  #   environment:
+  #     WORKERS_POOL_SIZE: "5"
+  #     PG_MAX_CONNS: "25"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.2"
+  #         memory: "25MB"
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    volumes:
+      - ./src/config/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "9999:9999"
+    networks:
+      - rinha
+    depends_on:
+      - api1
+      - api2
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 60M
+
+networks:
+  rinha:
+    driver: bridge
+  payment-processor:
+    external: true
+
+volumes:
+  pg_socket:
+  mq_socket:

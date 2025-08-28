@@ -1,0 +1,21 @@
+
+$processPayment ==> (req) {
+    $body = json_parse(req["body"])
+    $time = nowIso()
+    $bestProcessor = getBestProcessor()
+
+    $body = {
+        "amount": body["amount"],
+        "correlationId": body["correlationId"],
+        "requestedAt": time,
+    }
+
+
+    $response = fast_request("POST", "http://host.docker.internal:800" + bestProcessor + "/payments", json_stringify(body), {
+        "Content-Type": "application/json"
+    })
+
+    if(response["status"] == 200) {
+        incrementBuffer(body, Number(bestProcessor))
+    }
+}

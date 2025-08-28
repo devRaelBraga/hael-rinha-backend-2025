@@ -1,0 +1,10 @@
+
+$publish ==> (processor) {
+    mq_pub("ipc:///var/run/mq/zmq.sock", "bestProcessor", processor)
+}
+
+$subscribe ==> () {
+    mq_sub("ipc:///var/run/mq/zmq.sock", "bestProcessor", ==> (msg) {
+        lock_put("processorToUse", msg)
+    })
+}

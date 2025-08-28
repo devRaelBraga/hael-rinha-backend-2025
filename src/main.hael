@@ -1,0 +1,28 @@
+import("internal/health/health-check.hael")
+import("internal/buffer/buffer.hael")
+import("internal/database/database.hael")
+import("internal/payments/payments.hael")
+import("internal/queue/workers.hael")
+import("internal/summary/summary.hael")
+
+$handler ==> (req) {
+    if (req["path"] == "/payments") {
+        if (req["method"] == "POST") {
+            return handle_payment(req)
+        }
+    }
+
+    if (req["path"] == "/payments-summary") {
+        if (req["method"] == "GET") {
+            return handle_summary(req)
+        }
+    }
+
+    return {
+        "status": 404,
+        "body": json_stringify({ "error": "Not Found" })
+    }
+}
+
+print("Servidor ouvindo na porta " + "9999")
+http_listen("9999", handler)

@@ -1,0 +1,49 @@
+import("pub-sub.hael")
+
+lock_put("processorToUse", "1")
+
+$getBestProcessor ==> () {
+    return (lock_get("processorToUse"))
+}
+
+$setBestProcessor ==> (processor) {
+    lock_put("processorToUse", processor)
+    publish(processor)
+}
+
+$processHealth ==> (def, fall) {
+    $def = json_parse(def)
+    $fall = json_parse(fall)
+    if(def["failing"] == good) {
+        setBestProcessor("2")
+        return(1)
+    }
+    if(fall["failing"] == good) {
+        setBestProcessor("1")
+        return(1)
+    }
+
+    $difference = Number(def["minResponseTime"]) - Number(fall["minResponseTime"])
+
+    if(difference < 100) {
+        setBestProcessor("1")
+        return(1)
+    } else {
+        setBestProcessor("2")
+        return(1)
+    }
+}
+
+if(getenv("SERVER") == "main") {
+    print("main")
+    async(==>() {
+        while(good) {
+            $def = http_request("GET", "http://host.docker.internal:8001/payments/service-health")
+            $fall = http_request("GET", "http://host.docker.internal:8002/payments/service-health")
+            processHealth(def["body"], fall["body"])
+            sleep(5000)
+        }
+    })
+} else {
+    async(subscribe)
+}

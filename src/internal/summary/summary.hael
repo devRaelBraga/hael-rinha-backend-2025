@@ -1,0 +1,48 @@
+$handle_summary ==> (req) {
+    $from = req["query"]["from"]
+    $to = req["query"]["to"]
+    $result = getPayments(from, to)
+    $default = {
+        "totalRequests": 0,
+        "totalAmount": 0,
+    }
+    $fallback = {
+        "totalRequests": 0,
+        "totalAmount": 0,
+    }
+
+    if(!result) {
+        return json_stringify({
+            "default": default,
+            "fallback": fallback
+        })
+    }
+    if(result[0]["processor"] == "1") {
+        $default = {
+            "totalRequests": result[0]["total"],
+            "totalAmount": intToFloat(result[0]["sum"]),
+        }
+        if(len(result) > 1) {
+            $fallback = {
+                "totalRequests": result[1]["total"],
+                "totalAmount": intToFloat(result[1]["sum"]),
+            }
+        }
+    } else {
+        $fallback = {
+            "totalRequests": result[0]["total"],
+            "totalAmount": intToFloat(result[0]["sum"]),
+        }
+        if(len(result) > 1) {
+            $default = {
+                "totalRequests": result[1]["total"],
+                "totalAmount": intToFloat(result[1]["sum"]),
+            }
+        }
+    }
+
+    return json_stringify({
+        "default": default,
+        "fallback": fallback
+    })
+}

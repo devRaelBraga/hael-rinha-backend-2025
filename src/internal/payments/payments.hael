@@ -1,0 +1,6 @@
+import("processor.hael")
+
+$handle_payment ==> (req) {
+    enqueue("payments", req)
+    return good
+}

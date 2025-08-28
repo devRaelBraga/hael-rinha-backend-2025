@@ -1,0 +1,25 @@
+buffer_new("payments")
+
+async(==> () {
+    while(good) {
+        sleep(200)
+        $batch = buffer_flush("payments")
+        if(len(batch) > 0) {
+            pg_exec("db",
+              "INSERT INTO payments (correlation_id, amount, processor, requested_at) "+
+              "SELECT x.correlation_id, x.amount, x.processor, x.requested_at FROM json_populate_recordset(null::payments, $1) x "+
+              "ON CONFLICT DO NOTHING",
+              [json_stringify(batch)]
+            )
+        }
+    }
+})
+
+$incrementBuffer ==> (item, processor) {
+    buffer_add("payments", {
+        "amount": floatToInt(item["amount"]),
+        "correlation_id": item["correlationId"],
+        "processor": processor,
+        "requested_at": item["requestedAt"],
+    })
+}

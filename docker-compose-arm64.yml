@@ -2,7 +2,7 @@
 
 x-service-templates:
   api: &api
-    image: hisraelbraga/rinha-2025-hael:latest
+    image: hisraelbraga/rinha-2025-hael-arm64:latest
     restart: on-failure
     networks:
       - rinha

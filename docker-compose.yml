@@ -27,8 +27,8 @@ services:
       POSTGRES_PASSWORD: rinha
       POSTGRES_DB: rinha
     volumes:
-      - ./src/config/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./src/config/postgresql.conf:/etc/postgresql.conf:ro
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./config/postgresql.conf:/etc/postgresql.conf:ro
       - pg_socket:/var/run/postgresql
     ports:
       - "1010:5432"
@@ -72,7 +72,7 @@ services:
     image: nginx:alpine
     container_name: nginx
     volumes:
-      - ./src/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "9999:9999"
     networks:

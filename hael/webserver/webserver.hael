@@ -1,7 +1,0 @@
-listenHTTP("3000",{
-    "/": ==>(req) { return parseHTML("webserver/pages/index.html") },
-    "/about": ==>(req) { return parseHTML("webserver/pages/about.html") },
-    "/interpreter": ==>(req) { return parseHTML("webserver/pages/interpreter.html") },
-    "/wasm/hael.wasm": ==>(req) { return parseHTML("wasm/hael.wasm") },
-    "/wasm/wasm_exec.js": ==>(req) { return parseHTML("wasm/wasm_exec.js") }
-})

@@ -666,8 +666,8 @@ func InitBuiltins(env *object.Environment) {
 					return newError("pg_connect: invalid dsn: %s", err.Error())
 				}
 
-				cfg.MaxConns = 25
-				cfg.MinConns = 5
+				cfg.MaxConns = 10
+				cfg.MinConns = 2
 				cfg.HealthCheckPeriod = 30 * time.Second
 				cfg.MaxConnLifetime = time.Minute * 5
 				cfg.MaxConnIdleTime = time.Minute

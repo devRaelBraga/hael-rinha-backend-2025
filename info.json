@@ -1,0 +1,12 @@
+{
+	"name": "Hisrael Braga",
+	"social": [
+		"https://www.linkedin.com/in/hisrael-braga-052188216/"
+	],
+	"source-code-repo": "https://github.com/devRaelBraga/hael-rinha-backend-2025",
+	"langs": ["hael"],
+	"storages": ["postgresql"],
+	"messaging": ["zeromq"],
+	"load-balancers": ["nginx"],
+	"other-technologies": ["go"]
+}
